@@ -1,33 +1,36 @@
 # Dynamic Time Warping
 
-Fast implementation of Dynamic Time Warping algorithm using numba JIT compilation. 
+Fast implementation of Dynamic Time Warping algorithm using numba for just in time compilation into machine code. 
 
-This package allows to calculate the distance between two sequences using DTW algorithm, or all the pairewise distances between sequences in a 2D array.
+This package allows to calculate the distance between two 1D sequences using the DTW algorithm, or all the pairewise distances between sequences in a 2D array.
 
 # Installation
 
 Using pip:
 ```
-pip install .
+pip install git+https://github.com/clabrugere/dynamic-time-warping.git
 ```
 
 # Usage
-
-The implementation doesn't return the full alignement matrix but only keep two 1d arrays in order to reduce the space complexity to $ O(N) $
-
-Note that it allows to specify a `window`argument that adds a locality constraint and reduce the number of distance evaluations when used.
 
 ```
 import numpy as np
 from dtw import dtw, pairwise
 
-X = np.random.randint(-10, 10, (100, 100)).astype(np.float64)
-
+X = np.random.rand(100, 1000).astype(np.float64)
 x, y = X[0, :], X[1, :]
+
+# between two 1d arrays
 d = dtw(x, y)
 
+# between several 1d arrays
 D = pairwise(X)
 ```
+
+Notes:
+ - The implementation doesn't return the full alignement matrix but only keeps track of two 1D arrays in order to reduce the space complexity of the algorithm to O(N).
+ - input arrays must be numpy arrays of type float64 and contiguous (order="C").
+- the `window` argument adds a locality constraint and reduces the number of distance evaluations when used. Default to 0 (no constraint).
 
 # License
 
