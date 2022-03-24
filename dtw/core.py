@@ -1,5 +1,13 @@
 import numpy as np
-from numba import njit, prange, float64, int64
+from numba import njit, prange, float64, int64, boolean
+
+
+@njit(float64[::1](float64[::1]), nogil=True, cache=True)
+def normalized(x):
+    mu, sigma = np.mean(x), np.std(x)
+    sigma = 1. if sigma == 0. else sigma
+    
+    return (x - mu) / sigma
 
 
 @njit(float64(float64, float64), nogil=True, cache=True)
@@ -31,8 +39,8 @@ def initialize_ub(x, y):
     return ub_partials
 
 
-@njit(float64(float64[::1], float64[::1], int64), nogil=True, cache=True)
-def dtw(x, y, window):
+@njit(float64(float64[::1], float64[::1], int64, boolean), nogil=True, cache=True)
+def dtw(x, y, window, normalize):
     # TODO implement pruning strategy
     """Compute the Dynamic Time Wraping distance between sequence x and y.
 
@@ -40,6 +48,7 @@ def dtw(x, y, window):
         x (1d np.array): First input sequence.
         y (1d np.array): Second input sequence.
         window (int): Size of the window around where to compute distances for alignement. Defaults to 0 (no window).
+        normalize (bool): Either to normalize input sequences so that they have zero mean and unit variance, or not.
 
     Returns:
         float: Distance between x and y.
@@ -50,6 +59,9 @@ def dtw(x, y, window):
     
     cost = np.full((2 * window + 1, ), np.inf, dtype=np.float64)
     cost_previous = np.full((2 * window + 1, ), np.inf, dtype=np.float64)
+    
+    if normalize:
+        x, y = normalized(x), normalized(y)
     
     cost[0] = sqrd_euclidean(x[0], y[0])
     
@@ -71,14 +83,15 @@ def dtw(x, y, window):
     return cost[k - 1]
 
 
-@njit(float64[:, ::1](float64[:, ::1], int64), parallel=True,  nogil=True, cache=True)
-def pairwise(X, window=0):
+@njit(float64[:, ::1](float64[:, ::1], int64, boolean), parallel=True,  nogil=True, cache=True)
+def pairwise(X, window, normalize):
     """Compute pairwise Dynamic Time Wraping distances between each sequences in X.
 
     Args:
         X (2d np.ndarray of shape (n_sequences, n_observations)): Array of sequences.
         window (int, optional): Size of the window around where to compute distances for alignement. Defaults to 0 (no window).
-
+        normalize (bool): Either to normalize input sequences so that they have zero mean and unit variance, or not.
+        
     Returns:
         2d np.ndarray of shape (n_sequences, n_sequences): Distance matrix.
     """
@@ -88,6 +101,6 @@ def pairwise(X, window=0):
     
     for i in prange(0, n):
         for j in range(i + 1, n):
-            dist_matrix[i, j] = dtw(X[i], X[j], window)
+            dist_matrix[i, j] = dtw(X[i], X[j], window, normalize)
     
     return dist_matrix + dist_matrix.T
