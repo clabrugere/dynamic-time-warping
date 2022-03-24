@@ -42,7 +42,7 @@ def initialize_ub(x, y):
 @njit(float64(float64[::1], float64[::1], int64, boolean), nogil=True, cache=True)
 def dtw(x, y, window, normalize):
     # TODO implement pruning strategy
-    """Compute the Dynamic Time Wraping distance between sequence x and y.
+    """Compute the Dynamic Time Warping distance between sequence x and y.
 
     Args:
         x (1d np.array): First input sequence.
@@ -85,11 +85,11 @@ def dtw(x, y, window, normalize):
 
 @njit(float64[:, ::1](float64[:, ::1], int64, boolean), parallel=True,  nogil=True, cache=True)
 def pairwise(X, window, normalize):
-    """Compute pairwise Dynamic Time Wraping distances between each sequences in X.
+    """Compute pairwise Dynamic Time Warping distances between each sequences in X.
 
     Args:
         X (2d np.ndarray of shape (n_sequences, n_observations)): Array of sequences.
-        window (int, optional): Size of the window around where to compute distances for alignement. Defaults to 0 (no window).
+        window (int, optional): Size of the window around where to compute distances for alignement. 0 for no window.
         normalize (bool): Either to normalize input sequences so that they have zero mean and unit variance, or not.
         
     Returns:
@@ -104,3 +104,25 @@ def pairwise(X, window, normalize):
             dist_matrix[i, j] = dtw(X[i], X[j], window, normalize)
     
     return dist_matrix + dist_matrix.T
+
+
+@njit(float64[:, :, ::1](float64[:, :, ::1], int64, boolean), parallel=True,  nogil=True, cache=True)
+def pairwise_multivariate(X, window, normalize):
+    """Compute pairwise Dynamic Time Warping distances between each multivariate sequences in X.
+
+    Args:
+        X (3d np.ndarray of shape (n_sequences, n_observations, n_features)): Array of sequences.
+        window (int, optional): Size of the window around where to compute distances for alignement. 0 for no window.
+        normalize (bool): Either to normalize input sequences so that they have zero mean and unit variance, or not.
+        
+    Returns:
+        3d np.ndarray of shape (n_sequences, n_sequences, n_feautres): Distance matrices per features.
+    """
+    
+    n, _, c = X.shape
+    dist_matrix = np.zeros((n, n, c), dtype=np.float64)
+    
+    for i in range(c):
+        dist_matrix[..., i] = pairwise(np.ascontiguousarray(X[..., i]), window, normalize)
+    
+    return dist_matrix
