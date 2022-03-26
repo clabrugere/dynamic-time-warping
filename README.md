@@ -2,7 +2,7 @@
 
 Fast implementation of Dynamic Time Warping algorithm using numba for just in time compilation into machine code. 
 
-This package allows to calculate the distance between two 1D sequences using the DTW algorithm, all the pairewise distances between sequences in a 2D array or pairwise distances between multivariate sequences in a 3D array.
+This package allows to calculate the distance between two 1D sequences using the DTW algorithm, all the pairewise distances between sequences in a 2D array or multivariate sequences in a 3D array. The resulting distance matrix can then be used directly in clustering or search algorithms for applications such as time series clustering or similar time series query.
 
 # Installation
 
@@ -36,8 +36,9 @@ D = np.mean(D_ndim, axis=-1)
 
 Notes:
  - The implementation doesn't return the full alignement matrix but only keeps track of two 1D arrays in order to reduce the space complexity of the algorithm to O(N).
- - input arrays must be numpy arrays of type float64 and contiguous (order="C").
+ - input arrays must be numpy arrays of float64 and contiguous (order="C").
  - the `window` argument adds a locality constraint and reduces the number of distance evaluations when used. Default to 0 (no constraint).
+ - the `normalize` flag allows to normalize each sequence so that it has zero mean and unit standard deviation
  - the multivariate version returns the full 3D matrix distance where the last axis represents the features.
 
 # License

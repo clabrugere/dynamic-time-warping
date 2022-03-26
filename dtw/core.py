@@ -116,7 +116,7 @@ def pairwise_multivariate(X, window, normalize):
         normalize (bool): Either to normalize input sequences so that they have zero mean and unit variance, or not.
         
     Returns:
-        3d np.ndarray of shape (n_sequences, n_sequences, n_feautres): Distance matrices per features.
+        3d np.ndarray of shape (n_sequences, n_sequences, n_features): Distance matrices per features.
     """
     
     n, _, c = X.shape
