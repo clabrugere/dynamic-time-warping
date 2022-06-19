@@ -11,5 +11,5 @@ setup(
         "numba>=0.55.1",
     ],
     license="MIT",
-    author="Clément Labrugere"
+    author="Clément Labrugere",
 )
